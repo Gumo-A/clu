@@ -41,8 +41,6 @@ enum Cmd {
     RemoveRegex(commands::remove_regex::Args),
     /// Python-style slice [A:B:S] applied to each line.
     StrSlice(commands::str_slice::Args),
-    /// Try to parse each line as JSON; report hits, misses, and parse errors.
-    TryParseJson,
     /// Count occurrences of each distinct line and print sorted.
     ValueCounts,
     /// Print a shell completion script to stdout (bash, zsh, fish, powershell, elvish).
@@ -68,7 +66,6 @@ fn main() {
         Cmd::RandomNum => commands::random_num::run(),
         Cmd::RemoveRegex(a) => commands::remove_regex::run(a),
         Cmd::StrSlice(a) => commands::str_slice::run(a),
-        Cmd::TryParseJson => commands::try_parse_json::run(),
         Cmd::ValueCounts => commands::value_counts::run(),
         Cmd::Completions { shell } => commands::completions::run(shell, &mut Cli::command()),
     };
