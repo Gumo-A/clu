@@ -1,0 +1,15 @@
+pub mod clean_json;
+pub mod completions;
+pub mod explode_line;
+pub mod get_line;
+pub mod join_lines;
+pub mod line_count_est;
+pub mod line_sim;
+pub mod mix_lines;
+pub mod plot_distr;
+pub mod plot_ts;
+pub mod random_num;
+pub mod remove_regex;
+pub mod str_slice;
+pub mod try_parse_json;
+pub mod value_counts;
