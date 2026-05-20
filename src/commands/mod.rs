@@ -11,5 +11,4 @@ pub mod plot_ts;
 pub mod random_num;
 pub mod remove_regex;
 pub mod str_slice;
-pub mod try_parse_json;
 pub mod value_counts;
