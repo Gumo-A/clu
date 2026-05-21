@@ -42,6 +42,21 @@ Run `cliu <subcommand> --help` for per-command options.
 
 ## Shell completions
 
+Add one line to your shell's rc file — completions are then generated at shell startup, always matching the installed binary:
+
+```sh
+# ~/.bashrc
+eval "$(cliu completions bash)"
+
+# ~/.zshrc
+eval "$(cliu completions zsh)"
+
+# ~/.config/fish/config.fish
+cliu completions fish | source
+```
+
+Or, to write a static file instead:
+
 ```sh
 cliu completions bash > /etc/bash_completion.d/cliu
 cliu completions zsh  > "${fpath[1]}/_cliu"
