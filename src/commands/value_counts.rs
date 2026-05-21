@@ -8,10 +8,10 @@ pub fn run() -> io::Result<()> {
         *counts.entry(line.trim().to_string()).or_insert(0) += 1;
     }
     let mut items: Vec<_> = counts.into_iter().collect();
-    items.sort_by(|a, b| a.0.cmp(&b.0));
+    items.sort_by(|a, b| a.1.cmp(&b.1));
     let mut out = stdout();
     for (k, v) in &items {
-        write_line(&mut out, &format!("{k} {v}"))?;
+        write_line(&mut out, &format!("{v} {k}"))?;
     }
     Ok(())
 }
