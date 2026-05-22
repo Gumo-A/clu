@@ -36,7 +36,7 @@ enum Cmd {
     /// Plot a time series "x y" per line from stdin (uses gnuplot).
     PlotTs(commands::plot_ts::Args),
     /// Print a random float in [0, 1) for each line of stdin.
-    RandomNum,
+    RandomNum(commands::random_num::Args),
     /// Remove all matches of REGEX from each line.
     RemoveRegex(commands::remove_regex::Args),
     /// Python-style slice [A:B:S] applied to each line.
@@ -63,7 +63,7 @@ fn main() {
         Cmd::MixLines(a) => commands::mix_lines::run(a),
         Cmd::PlotDistr(a) => commands::plot_distr::run(a),
         Cmd::PlotTs(a) => commands::plot_ts::run(a),
-        Cmd::RandomNum => commands::random_num::run(),
+        Cmd::RandomNum(a) => commands::random_num::run(a),
         Cmd::RemoveRegex(a) => commands::remove_regex::run(a),
         Cmd::StrSlice(a) => commands::str_slice::run(a),
         Cmd::ValueCounts => commands::value_counts::run(),
