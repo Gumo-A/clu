@@ -2,9 +2,9 @@ use clap::Parser;
 use gnuplot::{AutoOption, AxesCommon, Figure, PlotOption, RGBString};
 use std::io::{self, BufRead};
 
-const DEFAULT_SAMPLE: usize = 1000;
-const MIN_BINS: usize = 10;
-const MAX_BINS: usize = 500;
+const DEFAULT_SAMPLE: usize = 100_000;
+const MIN_BINS: usize = 4;
+const MAX_BINS: usize = 128;
 const HARD_BIN_CAP: usize = 10_000;
 
 #[derive(Parser)]
@@ -47,8 +47,12 @@ pub fn run(args: Args) -> io::Result<()> {
     let mut hist = Histogram::from_sample(&sample);
 
     // Phase 2: stream the remaining values straight into the histogram and
-    // stats accumulator without retaining them.
+    // stats accumulator without retaining them. If the stream ended during
+    // Phase 1 we still have the full sequence, so we can also render the
+    // series line plot in a multiplot view.
+    let mut streamed = false;
     for line in lines {
+        streamed = true;
         lineno += 1;
         let Some(v) = parse_value(&line?, lineno, args.log) else {
             continue;
@@ -57,7 +61,11 @@ pub fn run(args: Args) -> io::Result<()> {
         hist.push(v);
     }
 
-    plot(&hist, &stats)
+    if streamed {
+        plot_hist(&hist, &stats)
+    } else {
+        multiplot_distr(&hist, &stats, &sample)
+    }
 }
 
 fn parse_value(line: &str, lineno: usize, log: bool) -> Option<f64> {
@@ -221,7 +229,7 @@ fn estimate_layout(sample: &[f64]) -> (f64, f64, usize) {
     (lo, width, n_bins)
 }
 
-fn plot(hist: &Histogram, stats: &Stats) -> io::Result<()> {
+fn plot_hist(hist: &Histogram, stats: &Stats) -> io::Result<()> {
     let centers = hist.centers();
     let title = format!(
         "Histogram (N={}, mean={:.3}, std={:.3}, min={:.3}, max={:.3})",
@@ -255,6 +263,131 @@ fn plot(hist: &Histogram, stats: &Stats) -> io::Result<()> {
         .wait()
         .map_err(|e| io::Error::other(format!("gnuplot exited with error: {e}")))?;
     Ok(())
+}
+
+/// Renders a 2x2 multiplot: histogram (top-left), box plot (top-right), and
+/// a line plot of the values in arrival order spanning the full bottom row.
+fn multiplot_distr(hist: &Histogram, stats: &Stats, data: &[f64]) -> io::Result<()> {
+    let centers = hist.centers();
+    let title = format!(
+        "Distribution (N={}, mean={:.3}, std={:.3}, min={:.3}, max={:.3})",
+        stats.n,
+        stats.mean,
+        stats.std(),
+        stats.min,
+        stats.max,
+    );
+
+    let (q1, median, q3, whisker_lo, whisker_hi) = box_plot_stats(data);
+
+    let mut fig = Figure::new();
+    fig.set_multiplot_layout(2, 2).set_title(&title);
+
+    // Top-left: histogram.
+    fig.axes2d()
+        .set_pos(0.0, 0.5)
+        .set_size(0.5, 0.5)
+        .set_title("Histogram", &[])
+        .set_x_label("Value", &[])
+        .set_y_label("Count", &[])
+        .boxes(
+            &centers,
+            &hist.bins,
+            &[
+                PlotOption::FillAlpha(0.6),
+                PlotOption::Color(RGBString("blue")),
+                PlotOption::BorderColor(RGBString("black")),
+            ],
+        )
+        .set_x_range(AutoOption::Fix(hist.lo), AutoOption::Fix(hist.hi()));
+
+    // Top-right: box plot.
+    fig.axes2d()
+        .set_pos(0.5, 0.5)
+        .set_size(0.5, 0.5)
+        .set_title("Box plot", &[])
+        .set_y_label("Value", &[])
+        .set_x_range(AutoOption::Fix(-1.0), AutoOption::Fix(1.0))
+        .set_x_ticks(None, &[], &[])
+        .box_and_whisker(
+            &[0.0f64],
+            &[q1],
+            &[whisker_lo],
+            &[whisker_hi],
+            &[q3],
+            &[
+                PlotOption::Color(RGBString("blue")),
+                PlotOption::FillAlpha(0.6),
+                PlotOption::BorderColor(RGBString("black")),
+                PlotOption::BoxWidth(vec![0.5]),
+            ],
+        )
+        .points(
+            &[0.0f64],
+            &[median],
+            &[
+                PlotOption::Color(RGBString("red")),
+                PlotOption::PointSymbol('O'),
+                PlotOption::PointSize(0.9),
+                PlotOption::PointSize(3.0),
+            ],
+        )
+        .set_y_range(
+            AutoOption::Fix(whisker_lo - (whisker_hi * 0.1)),
+            AutoOption::Fix(whisker_hi + (whisker_hi * 0.1)),
+        );
+
+    // Bottom row spanning full width: series in arrival order.
+    let xs: Vec<usize> = (0..data.len()).collect();
+    fig.axes2d()
+        .set_pos(0.0, 0.0)
+        .set_size(1.0, 0.5)
+        .set_title("Series", &[])
+        .set_x_label("Index", &[])
+        .set_y_label("Value", &[])
+        .lines(&xs, data, &[PlotOption::Color(RGBString("blue"))]);
+
+    let mut handle = fig.show().map_err(|e| {
+        io::Error::other(format!("failed to launch gnuplot (is it installed?): {e}"))
+    })?;
+    handle
+        .wait()
+        .map_err(|e| io::Error::other(format!("gnuplot exited with error: {e}")))?;
+    Ok(())
+}
+
+/// Returns `(q1, median, q3, whisker_lo, whisker_hi)` for a Tukey box plot.
+///
+/// Whiskers are clamped to the most extreme data point still inside
+/// `[Q1 - 1.5*IQR, Q3 + 1.5*IQR]`.
+fn box_plot_stats(data: &[f64]) -> (f64, f64, f64, f64, f64) {
+    let mut sorted: Vec<f64> = data.to_vec();
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let quantile = |p: f64| -> f64 {
+        let pos = p * (sorted.len() - 1) as f64;
+        let lo = pos.floor() as usize;
+        let hi = pos.ceil() as usize;
+        let frac = pos - lo as f64;
+        sorted[lo] * (1.0 - frac) + sorted[hi] * frac
+    };
+    let q1 = quantile(0.25);
+    let median = quantile(0.5);
+    let q3 = quantile(0.75);
+    let iqr = q3 - q1;
+    let lo_fence = q1 - 1.5 * iqr;
+    let hi_fence = q3 + 1.5 * iqr;
+    let whisker_lo = sorted
+        .iter()
+        .copied()
+        .find(|&v| v >= lo_fence)
+        .unwrap_or(sorted[0]);
+    let whisker_hi = sorted
+        .iter()
+        .rev()
+        .copied()
+        .find(|&v| v <= hi_fence)
+        .unwrap_or(*sorted.last().unwrap());
+    (q1, median, q3, whisker_lo, whisker_hi)
 }
 
 pub(crate) fn run_gnuplot(script: &str) -> io::Result<()> {
