@@ -9,6 +9,6 @@ pub mod mix_lines;
 pub mod plot_distr;
 pub mod plot_ts;
 pub mod random_num;
-pub mod remove_regex;
+pub mod replace_regex;
 pub mod str_slice;
 pub mod value_counts;
