@@ -2,21 +2,21 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 fn run(args: &[&str], stdin: &str) -> (String, String, i32) {
-    let bin = env!("CARGO_BIN_EXE_cliu");
+    let bin = env!("CARGO_BIN_EXE_clu");
     let mut child = Command::new(bin)
         .args(args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("spawn cliu");
+        .expect("spawn clu");
     child
         .stdin
         .as_mut()
         .unwrap()
         .write_all(stdin.as_bytes())
         .unwrap();
-    let out = child.wait_with_output().expect("wait cliu");
+    let out = child.wait_with_output().expect("wait clu");
     (
         String::from_utf8(out.stdout).unwrap(),
         String::from_utf8(out.stderr).unwrap(),
@@ -74,14 +74,23 @@ fn join_lines_flushes_partial_group() {
 }
 
 #[test]
-fn remove_regex_strips_matches() {
-    let out = stdout_of(&["remove-regex", r"\d+"], "abc123def\n42\nno digits\n");
-    assert_eq!(out, "abcdef\n\nno digits\n");
+fn replace_regex_substitutes_matches() {
+    let out = stdout_of(
+        &["replace-regex", r"\d+", "N"],
+        "abc123def\n42\nno digits\n",
+    );
+    assert_eq!(out, "abcNdef\nN\nno digits\n");
 }
 
 #[test]
-fn remove_regex_invalid_pattern_errors() {
-    let (_out, _err, code) = run(&["remove-regex", "("], "x\n");
+fn replace_regex_supports_capture_refs() {
+    let out = stdout_of(&["replace-regex", r"(\w+)@(\w+)", "$2.$1"], "user@host\n");
+    assert_eq!(out, "host.user\n");
+}
+
+#[test]
+fn replace_regex_invalid_pattern_errors() {
+    let (_out, _err, code) = run(&["replace-regex", "(", "x"], "x\n");
     assert_ne!(code, 0);
 }
 
@@ -119,7 +128,7 @@ fn str_slice_step_zero_returns_empty() {
 #[test]
 fn value_counts_sorted_by_key() {
     let out = stdout_of(&["value-counts"], "b\na\nb\nc\nb\na\n");
-    assert_eq!(out, "a 2\nb 3\nc 1\n");
+    assert_eq!(out, "1 c\n2 a\n3 b\n");
 }
 
 #[test]
@@ -161,7 +170,7 @@ fn mix_lines_preserves_multiset() {
 #[test]
 fn line_count_est_matches_for_uniform_file() {
     let dir = std::env::temp_dir();
-    let path = dir.join(format!("cliu-lce-{}.txt", std::process::id()));
+    let path = dir.join(format!("clu-lce-{}.txt", std::process::id()));
     let mut f = std::fs::File::create(&path).unwrap();
     for _ in 0..100 {
         writeln!(f, "abcdefghij").unwrap();
@@ -177,7 +186,7 @@ fn line_count_est_matches_for_uniform_file() {
 
 #[test]
 fn line_count_est_empty_file_is_zero() {
-    let path = std::env::temp_dir().join(format!("cliu-lce-empty-{}.txt", std::process::id()));
+    let path = std::env::temp_dir().join(format!("clu-lce-empty-{}.txt", std::process::id()));
     std::fs::File::create(&path).unwrap();
     let out = stdout_of(&["line-count-est", path.to_str().unwrap()], "");
     let _ = std::fs::remove_file(&path);
@@ -187,5 +196,5 @@ fn line_count_est_empty_file_is_zero() {
 #[test]
 fn completions_prints_bash_script() {
     let out = stdout_of(&["completions", "bash"], "");
-    assert!(out.contains("cliu"), "expected completion to mention cliu");
+    assert!(out.contains("clu"), "expected completion to mention clu");
 }

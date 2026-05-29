@@ -1,6 +1,6 @@
 # cli-utils
 
-A grab bag of stdin-oriented text utilities, shipped as a single binary: `cliu`.
+A grab bag of stdin-oriented text utilities, shipped as a single binary: `clu`.
 
 ## Install
 
@@ -8,12 +8,12 @@ A grab bag of stdin-oriented text utilities, shipped as a single binary: `cliu`.
 cargo install --path .
 ```
 
-The binary is named `cliu` (see `[[bin]]` in `Cargo.toml`).
+The binary is named `clu` (see `[[bin]]` in `Cargo.toml`).
 
 ## Usage
 
 ```sh
-cliu <subcommand> [args...]
+clu <subcommand> [args...]
 ```
 
 Most subcommands read lines from stdin and write to stdout, so they compose with pipes.
@@ -33,12 +33,13 @@ Most subcommands read lines from stdin and write to stdout, so they compose with
 | `plot-ts` | Plot a time series `x y` per line from stdin (uses gnuplot). |
 | `random-num` | Print a random float in `[0, 1)` for each line of stdin. |
 | `remove-regex` | Remove all matches of a regex from each line. |
+| `replace-regex` | Replace all matches of a regex with a replacement in each line. |
 | `str-slice` | Python-style slice `[A:B:S]` applied to each line. |
 | `try-parse-json` | Try to parse each line as JSON; report hits, misses, and parse errors. |
 | `value-counts` | Count occurrences of each distinct line and print sorted. |
 | `completions` | Print a shell completion script (bash, zsh, fish, powershell, elvish). |
 
-Run `cliu <subcommand> --help` for per-command options.
+Run `clu <subcommand> --help` for per-command options.
 
 ## Shell completions
 
@@ -46,31 +47,31 @@ Add one line to your shell's rc file — completions are then generated at shell
 
 ```sh
 # ~/.bashrc
-eval "$(cliu completions bash)"
+eval "$(clu completions bash)"
 
 # ~/.zshrc
-eval "$(cliu completions zsh)"
+eval "$(clu completions zsh)"
 
 # ~/.config/fish/config.fish
-cliu completions fish | source
+clu completions fish | source
 ```
 
 Or, to write a static file instead:
 
 ```sh
-cliu completions bash > /etc/bash_completion.d/cliu
-cliu completions zsh  > "${fpath[1]}/_cliu"
+clu completions bash > /etc/bash_completion.d/clu
+clu completions zsh  > "${fpath[1]}/_clu"
 ```
 
 ## Examples
 
 ```sh
 # Extract JSON blobs from a messy log and count distinct payloads
-cat app.log | cliu clean-json | cliu value-counts
+cat app.log | clu clean-json | clu value-counts
 
 # Quick histogram of response times
-awk '{print $7}' access.log | cliu plot-distr
+awk '{print $7}' access.log | clu plot-distr
 
 # Estimate how many lines are in a huge file without reading it all
-cliu line-count-est huge.csv
+clu line-count-est huge.csv
 ```
