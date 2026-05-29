@@ -6,7 +6,7 @@ use clap_complete::Shell;
 
 #[derive(Parser)]
 #[command(
-    name = "cliu",
+    name = "clu",
     about = "A grab bag of stdin-oriented text utilities.",
     version
 )]
@@ -37,8 +37,8 @@ enum Cmd {
     PlotTs(commands::plot_ts::Args),
     /// Print a random float in [0, 1) for each line of stdin.
     RandomNum(commands::random_num::Args),
-    /// Remove all matches of REGEX from each line.
-    RemoveRegex(commands::remove_regex::Args),
+    /// Replace all matches of REGEX with REPLACEMENT in each line.
+    ReplaceRegex(commands::replace_regex::Args),
     /// Python-style slice [A:B:S] applied to each line.
     StrSlice(commands::str_slice::Args),
     /// Count occurrences of each distinct line and print sorted.
@@ -64,7 +64,7 @@ fn main() {
         Cmd::PlotDistr(a) => commands::plot_distr::run(a),
         Cmd::PlotTs(a) => commands::plot_ts::run(a),
         Cmd::RandomNum(a) => commands::random_num::run(a),
-        Cmd::RemoveRegex(a) => commands::remove_regex::run(a),
+        Cmd::ReplaceRegex(a) => commands::replace_regex::run(a),
         Cmd::StrSlice(a) => commands::str_slice::run(a),
         Cmd::ValueCounts => commands::value_counts::run(),
         Cmd::Completions { shell } => commands::completions::run(shell, &mut Cli::command()),
