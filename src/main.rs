@@ -39,8 +39,6 @@ enum Cmd {
     ReplaceRegex(commands::replace_regex::Args),
     /// Python-style slice [A:B:S] applied to each line.
     StrSlice(commands::str_slice::Args),
-    /// Count occurrences of each distinct line and print sorted.
-    ValueCounts,
     /// Print a shell completion script to stdout (bash, zsh, fish, powershell, elvish).
     Completions {
         /// Shell to generate completions for.
@@ -63,7 +61,6 @@ fn main() {
         Cmd::RandomNum(a) => commands::random_num::run(a),
         Cmd::ReplaceRegex(a) => commands::replace_regex::run(a),
         Cmd::StrSlice(a) => commands::str_slice::run(a),
-        Cmd::ValueCounts => commands::value_counts::run(),
         Cmd::Completions { shell } => commands::completions::run(shell, &mut Cli::command()),
     };
     if let Err(e) = result {
