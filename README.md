@@ -1,4 +1,4 @@
-# cli-utils
+# cl-utils
 
 A grab bag of stdin-oriented text utilities, shipped as a single binary: `clu`.
 
