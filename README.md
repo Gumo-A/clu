@@ -33,7 +33,6 @@ Most subcommands read lines from stdin and write to stdout, so they compose with
 | `random-num` | Print a random float in `[0, 1)` for each line of stdin. |
 | `replace-regex` | Replace all matches of a regex with a replacement in each line. |
 | `str-slice` | Python-style slice `[A:B:S]` applied to each line. |
-| `value-counts` | Count occurrences of each distinct line and print sorted. |
 | `completions` | Print a shell completion script (bash, zsh, fish, powershell, elvish). |
 
 Run `clu <subcommand> --help` for per-command options.

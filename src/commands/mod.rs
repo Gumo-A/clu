@@ -10,4 +10,3 @@ pub mod plot_distr;
 pub mod random_num;
 pub mod replace_regex;
 pub mod str_slice;
-pub mod value_counts;
