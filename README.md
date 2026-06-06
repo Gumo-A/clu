@@ -64,8 +64,8 @@ clu completions zsh  > "${fpath[1]}/_clu"
 ## Examples
 
 ```sh
-# Extract JSON blobs from a messy log and count distinct payloads
-cat app.log | clu clean-json | clu value-counts
+# Extract JSON blobs from a messy log
+cat app.log | clu clean-json
 
 # Quick histogram of response times
 awk '{print $7}' access.log | clu plot-distr

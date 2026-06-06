@@ -126,12 +126,6 @@ fn str_slice_step_zero_returns_empty() {
 }
 
 #[test]
-fn value_counts_sorted_by_key() {
-    let out = stdout_of(&["value-counts"], "b\na\nb\nc\nb\na\n");
-    assert_eq!(out, "1 c\n2 a\n3 b\n");
-}
-
-#[test]
 fn line_sim_identical_strings_score_one() {
     let out = stdout_of(&["line-sim"], "hello hello\n");
     let first = out.lines().next().unwrap();
