@@ -7,7 +7,6 @@ pub mod line_count_est;
 pub mod line_sim;
 pub mod mix_lines;
 pub mod plot_distr;
-pub mod plot_ts;
 pub mod random_num;
 pub mod replace_regex;
 pub mod str_slice;

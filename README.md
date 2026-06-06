@@ -30,7 +30,6 @@ Most subcommands read lines from stdin and write to stdout, so they compose with
 | `line-sim` | For each line `A SEP B`, print the similarity ratio between A and B. |
 | `mix-lines` | Reservoir-style shuffle: hold N lines, emit at random as new lines arrive. |
 | `plot-distr` | Plot a distribution of numbers from stdin (uses gnuplot). |
-| `plot-ts` | Plot a time series `x y` per line from stdin (uses gnuplot). |
 | `random-num` | Print a random float in `[0, 1)` for each line of stdin. |
 | `remove-regex` | Remove all matches of a regex from each line. |
 | `replace-regex` | Replace all matches of a regex with a replacement in each line. |

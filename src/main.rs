@@ -33,8 +33,6 @@ enum Cmd {
     MixLines(commands::mix_lines::Args),
     /// Plot a distribution of numbers from stdin (uses gnuplot).
     PlotDistr(commands::plot_distr::Args),
-    /// Plot a time series "x y" per line from stdin (uses gnuplot).
-    PlotTs(commands::plot_ts::Args),
     /// Print a random float in [0, 1) for each line of stdin.
     RandomNum(commands::random_num::Args),
     /// Replace all matches of REGEX with REPLACEMENT in each line.
@@ -62,7 +60,6 @@ fn main() {
         Cmd::LineSim(a) => commands::line_sim::run(a),
         Cmd::MixLines(a) => commands::mix_lines::run(a),
         Cmd::PlotDistr(a) => commands::plot_distr::run(a),
-        Cmd::PlotTs(a) => commands::plot_ts::run(a),
         Cmd::RandomNum(a) => commands::random_num::run(a),
         Cmd::ReplaceRegex(a) => commands::replace_regex::run(a),
         Cmd::StrSlice(a) => commands::str_slice::run(a),
