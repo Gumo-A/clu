@@ -2,9 +2,11 @@
 
 A grab bag of stdin-oriented text utilities, shipped as a single binary: `clu`.
 
-## Install
+## Install (requires [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html))
 
 ```sh
+git clone https://github.com/Gumo-A/clu.git
+cd clu
 cargo install --path .
 ```
 
